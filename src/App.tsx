@@ -6,8 +6,10 @@ import './App.css';
 /**
  * State declaration for <App />
  */
+//made the return type boolean
 interface IState {
   data: ServerRespond[],
+  showGraph: boolean,
 }
 
 /**
@@ -17,11 +19,12 @@ interface IState {
 class App extends Component<{}, IState> {
   constructor(props: {}) {
     super(props);
-
+//the default mode of showing the graph made false so that it does not display when sit is first loaded
     this.state = {
       // data saves the server responds.
       // We use this state to parse data down to the child element (Graph) as element property
       data: [],
+      showGraph: false,
     };
   }
 
@@ -29,6 +32,8 @@ class App extends Component<{}, IState> {
    * Render Graph react component with state.data parse as property data
    */
   renderGraph() {
+    //condition added to return 
+    if(this.state.showGraph)
     return (<Graph data={this.state.data}/>)
   }
 
@@ -36,11 +41,20 @@ class App extends Component<{}, IState> {
    * Get new data from server and update the state with the new data
    */
   getDataFromServer() {
-    DataStreamer.getData((serverResponds: ServerRespond[]) => {
-      // Update the state by creating a new array of data that consists of
-      // Previous data in the state and the new data from server
-      this.setState({ data: [...this.state.data, ...serverResponds] });
-    });
+    //continuous update and display enabled through this function
+    let x=0;
+    const interval = setInterval(()=>{
+      DataStreamer.getData((serverResponds: ServerRespond[])=>{
+        this.setState({
+          data: serverResponds,
+          showGraph: true,
+        });
+      });
+      x++;
+      if(x>1000){
+        clearInterval(interval);
+      }
+    },100);
   }
 
   /**
